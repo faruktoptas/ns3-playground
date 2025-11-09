@@ -44,7 +44,3 @@ docker run --rm -v "$(pwd)":/workspace ns3-playground:local /bin/bash -lc "cd /o
 ## Contribution
 
 Contributions are welcome. To add or update examples, add the `.cc` under `scratch/` and open a PR.
-
----
-Updated Quickstart to use PR-based contributions (no clone required).
-# ns3-playground
