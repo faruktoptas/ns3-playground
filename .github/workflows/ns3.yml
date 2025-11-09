@@ -1,0 +1,43 @@
+name: NS-3 Playground
+
+on:
+  push:
+    paths:
+      - 'scratch/**'
+      - 'Dockerfile'
+      - '.github/workflows/ns3.yml'
+  pull_request:
+
+jobs:
+  build-and-push-image:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ghcr.io/${{ github.repository_owner }}/ns3-playground:latest
+
+  run-simulation:
+    runs-on: ubuntu-latest
+    needs: build-and-push-image
+    steps:
+      - uses: actions/checkout@v4
+      - uses: addnab/docker-run-action@v3
+        with:
+          image: ghcr.io/${{ github.repository_owner }}/ns3-playground:latest
+          options: -v ${{ github.workspace }}:/workspace
+          run: |
+            cd /opt/ns-3
+            cp /workspace/scratch/*.cc scratch/
+            ./ns3 build scratch/example
+            ./ns3 run scratch/example
