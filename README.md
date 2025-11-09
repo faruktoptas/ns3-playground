@@ -2,67 +2,49 @@
 
 A small repository to experiment with ns-3 simulations inside a container and via GitHub Actions.
 
-This repo expects you to place ns-3 example source files (.cc) into the `scratch/` folder. When files are added and pushed, the workflow will pick them up and run the simulation in a container.
+This repo expects ns-3 example source files (.cc) under the `scratch/` folder. Instead of cloning the repo, contributors should add a simulation file and open a pull request — the workflow will pick up files added under `scratch/` and run them inside the container.
 
-## Quickstart
+## Quickstart 
 
-1. Clone the repository:
+Add a simulation file and create a pull request on GitHub (recommended via the web UI):
 
-```bash
-git clone https://github.com/faruktoptas/ns3-playground.git
-cd ns3-playground
-```
+1. Open the repository on GitHub: https://github.com/faruktoptas/ns3-playground
+2. Click "Add file" -> "Create new file".
+3. In the filename box, enter `scratch/<your_name>.cc` (for example `scratch/my_example.cc`).
+4. Paste your ns-3 `.cc` content into the editor.
+5. Below the editor choose "Create a new branch for this commit and start a pull request" (or set a branch name), then click "Propose new file".
+6. Finish the PR creation (add title/description) and submit the PR.
 
-2. Add your simulation.
+What happens next
+- When your pull request is opened, GitHub Actions will run the `run-simulation` job which copies any `scratch/*.cc` files into the container and builds/runs each example.
+- The `build-and-push-image` job is restricted to the `build-docker` branch (it won't run for normal contributor PRs). This keeps normal PR runs lightweight.
 
-- Create a new ns-3 example file under `scratch/`, for example `scratch/my_example.cc`.
-- Build and run will be performed by the container/workflow. Commit and push the new file:
+If you prefer to use the command line and have permission to push branches, you can also create a branch locally, add `scratch/*.cc`, push the branch and open a PR — but cloning is not required for basic contributions via the web UI.
 
-```bash
-git checkout -b my-sim
-# add scratch/my_example.cc
-git add scratch/my_example.cc
-git commit -m "Add my ns-3 example"
-git push -u origin my-sim
-```
+## How the runner executes examples
 
-Pushing to the repository will trigger the GitHub Actions workflow defined in `.github/workflows/ns3.yml`. The workflow copies any `scratch/*.cc` file into the container and runs the example.
+- The workflow will attempt to build and run every `scratch/*.cc` it finds. Name the file with a `.cc` extension and use standard ns-3 example conventions.
+- If a build or run fails for one file, the workflow will continue with the remaining examples.
 
-## How workflows behave in this repo
+## Optional: test locally (advanced)
 
-- `run-simulation` runs (in parallel) and will attempt to run any examples found in `scratch/` by using the container image.
-- `build-and-push-image` builds and pushes the container image, but it is restricted to run only on the `build-docker` branch. If you want the image built/pushed automatically, push or open a PR from the `build-docker` branch.
-
-If you need to change this behavior, edit `.github/workflows/ns3.yml`.
-
-## Run locally (optional)
-
-If you prefer to iterate locally without depending on GitHub Actions, you can build the image and run the same steps the workflow runs. The repository contains a `Dockerfile` for an image that includes ns-3.
-
-1. Build the image locally:
+If you want to run the same container locally (this requires cloning and Docker locally):
 
 ```bash
 docker build -t ns3-playground:local .
+docker run --rm -v "$(pwd)":/workspace ns3-playground:local /bin/bash -lc "cd /opt/ns-3 && cp /workspace/scratch/*.cc scratch/ || true && for src in scratch/*.cc; do [ -e \"$src\" ] || continue; name=$(basename \"$src\" .cc); ./ns3 build scratch/$name && ./ns3 run scratch/$name || true; done"
 ```
-
-2. Run a container and execute the same commands used by the workflow (this mounts the repo into the container at `/workspace`):
-
-```bash
-docker run --rm -v "$(pwd)":/workspace ns3-playground:local /bin/bash -lc "cd /opt/ns-3 && cp /workspace/scratch/*.cc scratch/ || true && ./ns3 build scratch/example || true && ./ns3 run scratch/example || true"
-```
-
-Adjust the build/run commands for your specific example name (replace `scratch/example` with your example target).
 
 ## Notes & troubleshooting
 
-- Make sure your `.cc` file follows ns-3 example conventions and that any required headers are present.
-- The workflow mounts your repository into the container; if you add other large files they will also be mounted.
-- If GitHub Actions can't find your example, check that the filename matches `scratch/*.cc` and that the workflow run logs show the copied files.
+- Make sure your `.cc` file follows ns-3 example conventions and includes any required headers.
+- If the workflow cannot find your example, confirm your PR added the file under the `scratch/` path and that the filename ends with `.cc`.
+- The CI logs show build/run output for each example; use those logs to debug failures.
 
 ## Contribution
 
-Contributions are welcome. If you want to change workflow behavior or add examples, open a PR.
+Contributions are welcome. To add or update examples, add the `.cc` under `scratch/` and open a PR.
 
 ---
-Generated README to explain how to clone, add files under `scratch/`, and run simulations locally or via GitHub Actions.
+Updated Quickstart to use PR-based contributions (no clone required).
 # ns3-playground
