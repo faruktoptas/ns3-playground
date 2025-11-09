@@ -1,0 +1,19 @@
+# CodeQL
+_codeql*
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Compiled files
+*.o
+*.so
+*.a
+*.out
+
+# Build artifacts
+build/
+dist/
