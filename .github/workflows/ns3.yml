@@ -38,8 +38,15 @@ jobs:
           options: -v ${{ github.workspace }}:/workspace
           run: |
             cd /opt/ns-3
-            cp /workspace/scratch/*.cc scratch/
-            ./ns3 build scratch/example
-            ./ns3 run scratch/example
+            cp /workspace/scratch/*.cc scratch/ || true
+            # Build and run every .cc file placed under scratch/
+            for src in scratch/*.cc; do
+              [ -e "$src" ] || continue
+              name=$(basename "$src" .cc)
+              echo "=== Building scratch/$name ==="
+              ./ns3 build scratch/"$name" || { echo "Build failed for $name"; continue; }
+              echo "=== Running scratch/$name ==="
+              ./ns3 run scratch/"$name" || { echo "Run failed for $name"; }
+            done
             ./ns3 build scratch/5g
             ./ns3 run scratch/5g
