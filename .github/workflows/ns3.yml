@@ -11,6 +11,7 @@ on:
 jobs:
   build-and-push-image:
     runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/build-docker'
     permissions:
       contents: read
       packages: write
@@ -40,3 +41,5 @@ jobs:
             cp /workspace/scratch/*.cc scratch/
             ./ns3 build scratch/example
             ./ns3 run scratch/example
+            ./ns3 build scratch/5g
+            ./ns3 run scratch/5g
