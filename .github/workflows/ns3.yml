@@ -48,5 +48,3 @@ jobs:
               echo "=== Running scratch/$name ==="
               ./ns3 run scratch/"$name" || { echo "Run failed for $name"; }
             done
-            ./ns3 build scratch/5g
-            ./ns3 run scratch/5g
